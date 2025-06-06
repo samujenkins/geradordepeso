@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Valores</title>
+    <style>
+        :root {
+            --vermelho: #e74c3c;
+            --laranja: #e67e22;
+            --preto: #2c3e50;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: var(--preto);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: var(--vermelho);
+            margin-bottom: 30px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        button {
+            background-color: var(--laranja);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--vermelho);
+        }
+
+        .values-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .value-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        .value-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            background-color: var(--preto);
+        }
+
+        .copy-btn:hover {
+            background-color: #1a252f;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bem vindo ao gerador de pesos para cargas de CMS</h1>
+    
+    <div class="container">
+        <div class="controls">
+            <button id="generate-btn">Gerar Nova Lista</button>
+        </div>
+        
+        <div class="values-list" id="values-list">
+            <!-- Os valores serão inseridos aqui pelo JavaScript -->
+        </div>
+        
+        <div class="summary">
+            <p>Total: <span id="total-sum">0</span></p>
+            <p>Quantidade: <span id="item-count">0</span> itens</p>
+            <button class="copy-btn" id="copy-btn">Copiar Lista</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const generateBtn = document.getElementById('generate-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const valuesList = document.getElementById('values-list');
+            const totalSumElement = document.getElementById('total-sum');
+            const itemCountElement = document.getElementById('item-count');
+            
+            // Parâmetros fixos
+            const TARGET_SUM = 27198;
+            const MIN_VALUE = 908;
+            const NUM_VALUES = 27;
+            
+            // Gerar lista inicial
+            generateList();
+            
+            // Event listeners
+            generateBtn.addEventListener('click', generateList);
+            copyBtn.addEventListener('click', copyListToClipboard);
+            
+            function generateList() {
+                let values = [];
+                let remainingSum = TARGET_SUM;
+                
+                // Primeiro, atribuir o valor mínimo a todos os itens
+                for (let i = 0; i < NUM_VALUES; i++) {
+                    values.push(MIN_VALUE);
+                    remainingSum -= MIN_VALUE;
+                }
+                
+                // Distribuir o restante aleatoriamente
+                while (remainingSum > 0) {
+                    const randomIndex = Math.floor(Math.random() * NUM_VALUES);
+                    values[randomIndex]++;
+                    remainingSum--;
+                }
+                
+                // Embaralhar os valores para não ficar o acréscimo sempre no início
+                values = shuffleArray(values);
+                
+                // Exibir os valores
+                displayValues(values);
+            }
+            
+            function displayValues(values) {
+                valuesList.innerHTML = '';
+                let sum = 0;
+                
+                values.forEach(value => {
+                    sum += value;
+                    const item = document.createElement('div');
+                    item.className = 'value-item';
+                    item.textContent = value;
+                    valuesList.appendChild(item);
+                });
+                
+                totalSumElement.textContent = sum;
+                itemCountElement.textContent = values.length;
+            }
+            
+            function copyListToClipboard() {
+                const items = Array.from(document.querySelectorAll('.value-item'));
+                const values = items.map(item => item.textContent).join('\n');
+                
+                navigator.clipboard.writeText(values).then(() => {
+                    alert('Lista copiada para a área de transferência!');
+                }).catch(err => {
+                    console.error('Erro ao copiar: ', err);
+                });
+            }
+            
+            // Função auxiliar para embaralhar array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+        });
+    </script>
+</body>
+</html>
